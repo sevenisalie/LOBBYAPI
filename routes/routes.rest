@@ -1,4 +1,4 @@
 GET http://localhost:8042/clients
 
 content-type: "application/json"
-Authorization: "sdfgsdfg"
+

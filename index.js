@@ -1,5 +1,19 @@
 const express = require("express")
 const cors = require("cors")
+const mongoose = require("mongoose")
+const {clientMain} = require("./db/models/Client.js")
+require('dotenv').config()
+
+
+//db
+const URI = process.env.MONGODB_URL
+mongoose.connect(URI)
+const db = mongoose.connection
+
+clientMain()
+// db.once('open', () => {
+//   console.log("Connected to database")
+// })
 
 const app = express()
 
