@@ -1,0 +1,4 @@
+.env
+/routes/routes.rest
+yarn.lock
+/node_modules

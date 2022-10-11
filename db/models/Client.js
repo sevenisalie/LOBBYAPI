@@ -1,4 +1,7 @@
 const mongoose = require("mongoose")
+const {fetchSummaryForKeyword, fetchAllClientNames} = require("../../data/wiki")
+
+
     // console.log("MONGOOSE CONNECT IN CLIENT>JS")
     // console.log(mongoose.connection)
 const db = mongoose.connection
@@ -23,6 +26,7 @@ const clientSchema = new mongoose.Schema({
     ppb_country: String,
     ppb_country_display: String,
     effective_date: String,
+    wiki: String,
     registrant: {
       id: Number,
       url: String,
@@ -64,8 +68,9 @@ const createClient = async (_cleanedDataChunk) => {
         // console.log(templist)
 
         console.log(_cleanedDataChunk.length)
-        const mongoObject = _cleanedDataChunk.map( (item) => {
-            return {..._cleanedDataChunk[8]}
+        const clients = await fetchAllClientsDescriptions(_cleanedDataChunk)
+        const mongoObject = clients.map( (item) => {
+            return {...item}
         })
         console.log(mongoObject.length)
         console.log(typeof templist)
@@ -83,8 +88,35 @@ const fetchAllClients = async () => {
         return clientList
     } catch (err) {
         console.log(err)
+        return err
     }
-
+}
+//expiremental wikishit
+const fetchAllClientsDescriptions = async (_clientList) => {
+    try {
+    const clients = _clientList
+    console.log("ALL CLIENTS SUCC")
+    console.log(Object.keys(clients[0]))
+    const keywords = await fetchAllClientNames(clients)
+    console.log("CLIENT NAMES SUCC")
+    console.log(keywords)
+    const mappedPromises = keywords.map( (keyword) => {
+        return fetchSummaryForKeyword(keyword)
+    })
+    const results = await Promise.all(mappedPromises)
+    console.log("ALL DESCRIPTIONS COLLECTED")
+    console.log(results)
+    //merge back into data
+    const mergedData = clients.map( (client, index) => {
+        return {
+            ...client,
+            wiki: results[index]
+        }
+    })
+    console.log("DATA MERGED")
+    console.log(mergedData[78])
+    return mergedData
+    } catch (err) {return null}
 }
 
 const clientMain = () => {
@@ -97,5 +129,6 @@ const clientMain = () => {
 module.exports = {
     clientMain,
     createClient,
-    fetchAllClients
+    fetchAllClients,
+    fetchAllClientsDescriptions
 }

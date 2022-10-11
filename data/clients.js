@@ -72,8 +72,7 @@ const iteratePageAndSave = async () => {
     return data
 }
 
-
-
 module.exports = {
     iteratePageAndSave,
+    
 }

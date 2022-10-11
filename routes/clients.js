@@ -6,7 +6,7 @@ require('dotenv').config()
 const mongoose = require("mongoose")
 const { states } = require("../constants")
 const { iteratePageAndSave } = require("../data/clients")
-const { fetchAllClients } = require("../db/models/Client")
+const { fetchAllClients, fetchAllClientsDescriptions } = require("../db/models/Client")
 
 //CRUD
 const fetchClientData = async (_url) => {
@@ -48,6 +48,23 @@ router.get("/", async (req, res) => {
         return res.json({
             message: "fail",
             data: err
+        })
+    }
+})
+
+//tests
+router.get("/descriptions", async (req, res) => {
+    try {
+        const descriptions = await fetchAllClientsDescriptions()
+        res.status(200)
+        return res.json({
+            status: "succ",
+            data: descriptions
+        })
+    } catch (err) {
+        res.status(400)
+        return res.json({
+            status: "fuck"
         })
     }
 })

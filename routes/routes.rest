@@ -2,3 +2,16 @@ GET http://localhost:8042/clients
 
 content-type: "application/json"
 
+###
+
+GET http://localhost:8042/clients/descriptions
+
+content-type: "application/json"
+
+
+###
+
+POST http://localhost:8042/clients/saveClients
+
+content-type: "application/json"
+
