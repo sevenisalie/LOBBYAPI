@@ -127,6 +127,7 @@ const clientMain = () => {
 }
 
 module.exports = {
+    Client,
     clientMain,
     createClient,
     fetchAllClients,

@@ -7,6 +7,7 @@ const mongoose = require("mongoose")
 const { states } = require("../constants")
 const { iteratePageAndSave } = require("../data/clients")
 const { fetchAllClients, fetchAllClientsDescriptions } = require("../db/models/Client")
+const { generalTextSearch } = require("../db/models/queries")
 
 //CRUD
 const fetchClientData = async (_url) => {
@@ -52,6 +53,28 @@ router.get("/", async (req, res) => {
     }
 })
 
+router.get("/search", async (req, res) => {
+    if (req.query.query === null) {
+        res.status(400)
+        return res.json({
+            message: "Please Enter A Query"
+        })
+    }
+    console.log(req.query.query)
+    const query = req.query.query
+    const response = await generalTextSearch(query)
+    if (response) {
+        res.status(200)
+        return res.json({
+            message: "succ",
+            data: response
+        })
+    }
+    res.status(500)
+    return res.json({
+        message: "nothing happened"
+    })
+})
 //tests
 router.get("/descriptions", async (req, res) => {
     try {
