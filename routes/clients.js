@@ -60,7 +60,8 @@ router.get("/search", async (req, res) => {
             message: "Please Enter A Query"
         })
     }
-    console.log(req.query.query)
+    console.log(Object.keys(req))
+    console.log(req.query)
     const query = req.query.query
     const response = await generalTextSearch(query)
     if (response) {
