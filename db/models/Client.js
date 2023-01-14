@@ -2,8 +2,6 @@ const mongoose = require("mongoose")
 const {fetchSummaryForKeyword, fetchAllClientNames} = require("../../data/wiki")
 
 
-    // console.log("MONGOOSE CONNECT IN CLIENT>JS")
-    // console.log(mongoose.connection)
 const db = mongoose.connection
 const clientSchema = new mongoose.Schema({
     id: Number,
@@ -54,30 +52,53 @@ const clientSchema = new mongoose.Schema({
 const Client = mongoose.model("Client", clientSchema)
 
 //CRUD
+async function insertDocumentsInBatches(documents, batchSize) {
+    const numBatches = Math.ceil(documents.length / batchSize);
+    for (let i = 0; i < numBatches - 1; i++) {
+      const startIndex = i * batchSize;
+      const endIndex = startIndex + batchSize;
+      const batch = documents.slice(startIndex, endIndex);
+  
+      try {
+        await Client.insertMany(batch);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  
+    // insert the final batch separately
+    const startIndex = (numBatches - 1) * batchSize;
+    const finalBatch = documents.slice(startIndex);
+    try {
+      await Client.insertMany(finalBatch);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
 const createClient = async (_cleanedDataChunk) => {
 
     try {
         console.log("CREATE CLIENT LENGTH")
-        // console.log(_cleanedDataChunk[8])
         const templist = []
         for (let i = 0; i < 20; i++) {
             const element = _cleanedDataChunk[i];
             templist.push(element)
         }
-        // console.log(templist)
+      
 
-        console.log(_cleanedDataChunk.length)
         const clients = await fetchAllClientsDescriptions(_cleanedDataChunk)
         const mongoObject = clients.map( (item) => {
             return {...item}
         })
-        console.log(mongoObject.length)
-        console.log(typeof templist)
-        await Client.insertMany(mongoObject)
+ 
+        const data = await insertDocumentsInBatches(mongoObject, 500)
         return true
     } catch (err) {
-        console.log(err)
+        console.log(Object.keys(err))
+        console.log(err.insertedDocs)
+        console.log(err.code)
+        console.log(err.codeName)
         return false
     }
 }
@@ -95,17 +116,14 @@ const fetchAllClients = async () => {
 const fetchAllClientsDescriptions = async (_clientList) => {
     try {
     const clients = _clientList
-    console.log("ALL CLIENTS SUCC")
-    console.log(Object.keys(clients[0]))
+
     const keywords = await fetchAllClientNames(clients)
-    console.log("CLIENT NAMES SUCC")
-    console.log(keywords)
+
     const mappedPromises = keywords.map( (keyword) => {
         return fetchSummaryForKeyword(keyword)
     })
     const results = await Promise.all(mappedPromises)
-    console.log("ALL DESCRIPTIONS COLLECTED")
-    console.log(results)
+
     //merge back into data
     const mergedData = clients.map( (client, index) => {
         return {
@@ -113,14 +131,12 @@ const fetchAllClientsDescriptions = async (_clientList) => {
             wiki: results[index]
         }
     })
-    console.log("DATA MERGED")
-    console.log(mergedData[78])
+
     return mergedData
     } catch (err) {return null}
 }
 
 const clientMain = () => {
-
     db.once('open', () => {
         console.log("Connected to MongoDB Remote DB")
       })

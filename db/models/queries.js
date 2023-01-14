@@ -27,6 +27,29 @@ const generalTextSearch = async (_query) => {
     }
 }
 
+const getClientNamesByState = async (state) => {
+  try {
+    const pipeline = [
+      {
+        $match: {
+          state: state,
+        },
+      },
+      {
+        $project: {
+          name: 1,
+          _id: 0,
+        },
+      },
+    ];
+
+    const clientNames = await Client.aggregate(pipeline).exec();
+    return clientNames;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 // const main = async () => {
 //     const db = await connect()
 //     if (db !== null) {
@@ -41,5 +64,6 @@ const generalTextSearch = async (_query) => {
 // main()
 
 module.exports = {
-    generalTextSearch
+    generalTextSearch,
+    getClientNamesByState
 }

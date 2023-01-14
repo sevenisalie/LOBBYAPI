@@ -52,3 +52,7 @@ const states = [
     { value: 'WV', name: 'WestVirginia'},
     { value: 'WY', name: 'Wyoming'}
     ];
+
+module.exports = {
+    states
+}

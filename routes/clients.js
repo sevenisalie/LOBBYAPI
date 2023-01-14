@@ -7,7 +7,7 @@ const mongoose = require("mongoose")
 const { states } = require("../constants")
 const { iteratePageAndSave } = require("../data/clients")
 const { fetchAllClients, fetchAllClientsDescriptions } = require("../db/models/Client")
-const { generalTextSearch } = require("../db/models/queries")
+const { generalTextSearch, getClientNamesByState } = require("../db/models/queries")
 
 //CRUD
 const fetchClientData = async (_url) => {
@@ -53,6 +53,41 @@ router.get("/", async (req, res) => {
     }
 })
 
+router.get("/state", async (req, res) => {
+    console.log(req)
+    if (req.query.state === null) {
+        res.status(400)
+        return res.json({
+            message: "Enter a state ID"
+        })
+    }
+    const stateCodes = states.map( (state) => {
+        return state.value
+    })
+    if (stateCodes.includes(req.query.state) === false) {
+        res.status(400)
+        return res.json({
+            message: "Enter a valid State ID",
+            data: stateCodes
+        })
+    }
+
+    const data = await getClientNamesByState(req.query.state)
+    if (data) {
+        res.status(200)
+        return res.json({
+            message: "succ",
+            data: data
+        })
+    }
+
+    //complete failure
+    res.status(500)
+    res.json({
+        message: "nothing happened"
+    })
+})
+
 router.get("/search", async (req, res) => {
     if (req.query.query === null) {
         res.status(400)
@@ -60,8 +95,7 @@ router.get("/search", async (req, res) => {
             message: "Please Enter A Query"
         })
     }
-    console.log(Object.keys(req))
-    console.log(req.query)
+
     const query = req.query.query
     const response = await generalTextSearch(query)
     if (response) {
@@ -102,7 +136,6 @@ router.post("/saveClients", async (req, res) => {
             message: message,
             data: data
         })
-        
     } catch (err) {
         res.status(400)
         return res.json({

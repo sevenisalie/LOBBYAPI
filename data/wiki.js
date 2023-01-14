@@ -1,7 +1,6 @@
 const wiki = require('wikijs').default
 
 const fetchAllClientNames = async (_clientList) => {
-    console.log(_clientList.length)
     const names = _clientList.map( (client) => {
         return client.name
     })
@@ -11,7 +10,6 @@ const fetchAllClientNames = async (_clientList) => {
 const fetchWikiData = async (textQuery) => {
     try {
         const page = await wiki().page(textQuery)
-        // console.log(await page.summary())
         return page
     } catch (err) {return null}
 }
